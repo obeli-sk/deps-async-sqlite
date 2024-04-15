@@ -199,11 +199,26 @@ impl Client {
         F: FnOnce(&Connection) -> Result<T, rusqlite::Error> + Send + 'static,
         T: Send + 'static,
     {
+        self.conn_with_err(|conn| func(conn).map_err(Error::from)).await
+    }
+
+    /// Invokes the provided function with a [`rusqlite::Connection`].
+    pub async fn conn_with_err<F, T, E: From<Error> + From<rusqlite::Error> + Send + 'static>(
+        &self,
+        func: F,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&Connection) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
         let (tx, rx) = oneshot::channel();
-        self.conn_tx.send(Command::Func(Box::new(move |conn| {
-            _ = tx.send(func(conn));
-        })))?;
-        Ok(rx.await??)
+        self.conn_tx
+            .send(Command::Func(Box::new(move |conn| {
+                _ = tx.send(func(conn));
+            })))
+            .map_err(Error::from)?;
+        rx.await
+            .map_err(|cancelled| E::from(Error::from(cancelled)))?
     }
 
     /// Invokes the provided function with a mutable [`rusqlite::Connection`].
@@ -212,11 +227,27 @@ impl Client {
         F: FnOnce(&mut Connection) -> Result<T, rusqlite::Error> + Send + 'static,
         T: Send + 'static,
     {
+        self.conn_mut_with_err(|conn| func(conn).map_err(Error::from))
+            .await
+    }
+
+    /// Invokes the provided function with a mutable [`rusqlite::Connection`].
+    pub async fn conn_mut_with_err<F, T, E: From<Error> + From<rusqlite::Error> + Send + 'static>(
+        &self,
+        func: F,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut Connection) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
         let (tx, rx) = oneshot::channel();
-        self.conn_tx.send(Command::Func(Box::new(move |conn| {
-            _ = tx.send(func(conn));
-        })))?;
-        Ok(rx.await??)
+        self.conn_tx
+            .send(Command::Func(Box::new(move |conn| {
+                _ = tx.send(func(conn));
+            })))
+            .map_err(Error::from)?;
+        rx.await
+            .map_err(|cancelled| E::from(Error::from(cancelled)))?
     }
 
     /// Closes the underlying sqlite connection.

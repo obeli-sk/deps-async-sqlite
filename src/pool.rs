@@ -183,6 +183,18 @@ impl Pool {
         self.get().conn(func).await
     }
 
+    /// Invokes the provided function with a [`rusqlite::Connection`].
+    pub async fn conn_with_err<F, T, E: From<Error> + From<rusqlite::Error> + Send + 'static>(
+        &self,
+        func: F,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&Connection) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        self.get().conn_with_err(func).await
+    }
+
     /// Invokes the provided function with a mutable [`rusqlite::Connection`].
     pub async fn conn_mut<F, T>(&self, func: F) -> Result<T, Error>
     where
@@ -190,6 +202,18 @@ impl Pool {
         T: Send + 'static,
     {
         self.get().conn_mut(func).await
+    }
+
+    /// Invokes the provided function with a mutable [`rusqlite::Connection`].
+    pub async fn conn_mut_with_err<F, T, E: From<Error> + From<rusqlite::Error> + Send + 'static>(
+        &self,
+        func: F,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut Connection) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        self.get().conn_mut_with_err(func).await
     }
 
     /// Closes the underlying sqlite connections.
