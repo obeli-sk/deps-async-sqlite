@@ -1,5 +1,6 @@
 /target
 /Cargo.lock
-
+/.direnv
+/.envrc
 /test-async-macro/target
 /test-async-macro/Cargo.lock
