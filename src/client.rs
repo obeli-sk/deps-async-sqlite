@@ -199,7 +199,8 @@ impl Client {
         F: FnOnce(&Connection) -> Result<T, rusqlite::Error> + Send + 'static,
         T: Send + 'static,
     {
-        self.conn_with_err(|conn| func(conn).map_err(Error::from)).await
+        self.conn_with_err(|conn| func(conn).map_err(Error::from))
+            .await
     }
 
     /// Invokes the provided function with a [`rusqlite::Connection`].
@@ -244,6 +245,38 @@ impl Client {
         self.conn_tx
             .send(Command::Func(Box::new(move |conn| {
                 _ = tx.send(func(conn));
+            })))
+            .map_err(Error::from)?;
+        rx.await
+            .map_err(|cancelled| E::from(Error::from(cancelled)))?
+    }
+
+    /// Invokes the provided function wrapping a new [`rusqlite::Transaction`] that is committed automatically.
+    pub async fn transaction_write<F, T, E: From<Error> + From<rusqlite::Error> + Send + 'static>(
+        &self,
+        func: F,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut rusqlite::Transaction) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        let (tx, rx) = oneshot::channel();
+        self.conn_tx
+            .send(Command::Func(Box::new(move |conn| {
+                let res = conn
+                    .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+                    .map_err(Error::from)
+                    .map_err(E::from);
+                let res = res
+                    .and_then(|mut transaction| func(&mut transaction).map(|ok| (ok, transaction)));
+                let res = res.and_then(|(ok, transaction)| {
+                    transaction
+                        .commit()
+                        .map(|_| ok)
+                        .map_err(Error::from)
+                        .map_err(E::from)
+                });
+                _ = tx.send(res);
             })))
             .map_err(Error::from)?;
         rx.await

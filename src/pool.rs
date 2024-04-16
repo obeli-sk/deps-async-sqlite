@@ -216,6 +216,18 @@ impl Pool {
         self.get().conn_mut_with_err(func).await
     }
 
+    /// Invokes the provided function wrapping a new [`rusqlite::Transaction`] that is committed automatically.
+    pub async fn transaction_write<F, T, E: From<Error> + From<rusqlite::Error> + Send + 'static>(
+        &self,
+        func: F,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut rusqlite::Transaction) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        self.get().transaction_write(func).await
+    }
+
     /// Closes the underlying sqlite connections.
     ///
     /// After this method returns, all calls to `self::conn()` or
