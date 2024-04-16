@@ -33,6 +33,7 @@ session = ["rusqlite/session"]
 sqlcipher = ["rusqlite/sqlcipher"]
 time = ["rusqlite/time"]
 trace = ["rusqlite/trace"]
+tracing = []
 unlock_notify = ["rusqlite/unlock_notify"]
 url = ["rusqlite/url"]
 uuid = ["rusqlite/uuid"]
@@ -43,6 +44,7 @@ window = ["rusqlite/window"]
 crossbeam-channel = { version = "0.5.9" }
 futures-channel = { version = "0.3.29" }
 futures-util = { version = "0.3.29" }
+tracing = { version = "0.1" }
 rusqlite = { version = "0.31.0" }
 
 [dev-dependencies]

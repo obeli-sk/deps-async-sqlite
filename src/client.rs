@@ -222,6 +222,31 @@ impl Client {
             .map_err(|cancelled| E::from(Error::from(cancelled)))?
     }
 
+    /// Invokes the provided function with a [`rusqlite::Connection`].
+    #[cfg(feature = "tracing")]
+    pub async fn conn_with_err_and_span<
+        F,
+        T,
+        E: From<Error> + From<rusqlite::Error> + Send + 'static,
+    >(
+        &self,
+        func: F,
+        span: tracing::Span,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&Connection) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        let (tx, rx) = oneshot::channel();
+        self.conn_tx
+            .send(Command::Func(Box::new(move |conn| {
+                _ = tx.send(span.in_scope(|| func(conn)));
+            })))
+            .map_err(Error::from)?;
+        rx.await
+            .map_err(|cancelled| E::from(Error::from(cancelled)))?
+    }
+
     /// Invokes the provided function with a mutable [`rusqlite::Connection`].
     pub async fn conn_mut<F, T>(&self, func: F) -> Result<T, Error>
     where
@@ -245,6 +270,31 @@ impl Client {
         self.conn_tx
             .send(Command::Func(Box::new(move |conn| {
                 _ = tx.send(func(conn));
+            })))
+            .map_err(Error::from)?;
+        rx.await
+            .map_err(|cancelled| E::from(Error::from(cancelled)))?
+    }
+
+    /// Invokes the provided function with a mutable [`rusqlite::Connection`].
+    #[cfg(feature = "tracing")]
+    pub async fn conn_mut_with_err_and_span<
+        F,
+        T,
+        E: From<Error> + From<rusqlite::Error> + Send + 'static,
+    >(
+        &self,
+        func: F,
+        span: tracing::Span,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut Connection) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        let (tx, rx) = oneshot::channel();
+        self.conn_tx
+            .send(Command::Func(Box::new(move |conn| {
+                _ = tx.send(span.in_scope(|| func(conn)));
             })))
             .map_err(Error::from)?;
         rx.await
@@ -281,6 +331,25 @@ impl Client {
             .map_err(Error::from)?;
         rx.await
             .map_err(|cancelled| E::from(Error::from(cancelled)))?
+    }
+
+    /// Invokes the provided function wrapping a new [`rusqlite::Transaction`] that is committed automatically.
+    #[cfg(feature = "tracing")]
+    pub async fn transaction_write_with_span<
+        F,
+        T,
+        E: From<Error> + From<rusqlite::Error> + Send + 'static,
+    >(
+        &self,
+        func: F,
+        span: tracing::Span,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut rusqlite::Transaction) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        self.transaction_write(move |transaction| span.in_scope(|| func(transaction)))
+            .await
     }
 
     /// Closes the underlying sqlite connection.
