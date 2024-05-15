@@ -310,11 +310,38 @@ impl Client {
         F: FnOnce(&mut rusqlite::Transaction) -> Result<T, E> + Send + 'static,
         T: Send + 'static,
     {
+        self.transaction(func, rusqlite::TransactionBehavior::Immediate)
+            .await
+    }
+
+    /// Invokes the provided function wrapping a new [`rusqlite::Transaction`] that is committed automatically.
+    pub async fn transaction_read<F, T, E: From<Error> + From<rusqlite::Error> + Send + 'static>(
+        &self,
+        func: F,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut rusqlite::Transaction) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        self.transaction(func, rusqlite::TransactionBehavior::Deferred)
+            .await
+    }
+
+    /// Invokes the provided function wrapping a new [`rusqlite::Transaction`] that is committed automatically.
+    pub async fn transaction<F, T, E: From<Error> + From<rusqlite::Error> + Send + 'static>(
+        &self,
+        func: F,
+        behavior: rusqlite::TransactionBehavior,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut rusqlite::Transaction) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
         let (tx, rx) = oneshot::channel();
         self.conn_tx
             .send(Command::Func(Box::new(move |conn| {
                 let res = conn
-                    .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+                    .transaction_with_behavior(behavior)
                     .map_err(Error::from)
                     .map_err(E::from);
                 let res = res
@@ -349,6 +376,25 @@ impl Client {
         T: Send + 'static,
     {
         self.transaction_write(move |transaction| span.in_scope(|| func(transaction)))
+            .await
+    }
+
+    /// Invokes the provided function wrapping a new [`rusqlite::Transaction`] that is committed automatically.
+    #[cfg(feature = "tracing")]
+    pub async fn transaction_read_with_span<
+        F,
+        T,
+        E: From<Error> + From<rusqlite::Error> + Send + 'static,
+    >(
+        &self,
+        func: F,
+        span: tracing::Span,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut rusqlite::Transaction) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        self.transaction_read(move |transaction| span.in_scope(|| func(transaction)))
             .await
     }
 

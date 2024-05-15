@@ -282,6 +282,36 @@ impl Pool {
         self.get().transaction_write_with_span(func, span).await
     }
 
+    /// Invokes the provided function wrapping a new [`rusqlite::Transaction`] that is committed automatically.
+    pub async fn transaction_read<F, T, E: From<Error> + From<rusqlite::Error> + Send + 'static>(
+        &self,
+        func: F,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut rusqlite::Transaction) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        self.get().transaction_read(func).await
+    }
+
+    /// Invokes the provided function wrapping a new [`rusqlite::Transaction`] that is committed automatically.
+    #[cfg(feature = "tracing")]
+    pub async fn transaction_read_with_span<
+        F,
+        T,
+        E: From<Error> + From<rusqlite::Error> + Send + 'static,
+    >(
+        &self,
+        func: F,
+        span: tracing::Span,
+    ) -> Result<T, E>
+    where
+        F: FnOnce(&mut rusqlite::Transaction) -> Result<T, E> + Send + 'static,
+        T: Send + 'static,
+    {
+        self.get().transaction_read_with_span(func, span).await
+    }
+
     /// Closes the underlying sqlite connections.
     ///
     /// After this method returns, all calls to `self::conn()` or
