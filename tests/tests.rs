@@ -32,6 +32,39 @@ fn test_blocking_client() {
 }
 
 #[test]
+fn perf_blocking_client() {
+    let tmp_dir = tempfile::tempdir().unwrap();
+    let client = ClientBuilder::new()
+        .journal_mode(JournalMode::Wal)
+        .path(tmp_dir.path().join("sqlite.db"))
+        .open_blocking()
+        .expect("client unable to be opened");
+
+    let large_string = String::from_utf8_lossy(&['a' as u8; 500]);
+
+    let stopwatch = std::time::Instant::now();
+    client
+        .conn_blocking(move |conn| {
+            conn.execute(
+                "CREATE TABLE testing (id TEXT PRIMARY KEY, val TEXT NOT NULL)",
+                (),
+            )?;
+            for val in 0..350 {
+                conn.execute(
+                    "INSERT INTO testing VALUES (?,?)",
+                    [val.to_string().as_str(), &large_string],
+                )
+                .unwrap();
+            }
+            Ok(())
+        })
+        .expect("writing schema and seed data");
+    println!("Finished in {:?}", stopwatch.elapsed());
+
+    client.close_blocking().expect("closing client conn");
+}
+
+#[test]
 fn test_blocking_pool() {
     let tmp_dir = tempfile::tempdir().unwrap();
     let pool = PoolBuilder::new()
@@ -56,6 +89,40 @@ fn test_blocking_pool() {
         Ok(())
     })
     .expect("querying for result");
+
+    pool.close_blocking().expect("closing client conn");
+}
+
+#[test]
+fn perf_blocking_pool() {
+    let tmp_dir = tempfile::tempdir().unwrap();
+    let pool = PoolBuilder::new()
+        .journal_mode(JournalMode::Wal)
+        .path(tmp_dir.path().join("sqlite.db"))
+        .open_blocking()
+        .expect("client unable to be opened");
+
+    let large_string = String::from_utf8_lossy(&['a' as u8; 500]);
+
+    let stopwatch = std::time::Instant::now();
+
+    pool.conn_blocking(move |conn| {
+        conn.execute(
+            "CREATE TABLE testing (id TEXT PRIMARY KEY, val TEXT NOT NULL)",
+            (),
+        )?;
+        for val in 0..350 {
+            conn.execute(
+                "INSERT INTO testing VALUES (?,?)",
+                [val.to_string().as_str(), &large_string],
+            )
+            .unwrap();
+        }
+        Ok(())
+    })
+    .expect("writing schema and seed data");
+
+    println!("Finished in {:?}", stopwatch.elapsed());
 
     pool.close_blocking().expect("closing client conn");
 }
