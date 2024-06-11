@@ -20,4 +20,5 @@ jobs:
 
     - name: publish
       run: cargo publish --token ${CRATES_TOKEN}
-
+      env:
+        CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
