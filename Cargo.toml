@@ -1,14 +1,11 @@
 [package]
 name = "obeli-sk-deps-async-sqlite"
-version = "0.2.2"
+version = "0.1.0"
 authors = ["Ryan Fowler"]
 edition = "2021"
 license = "MIT"
-description = "A library for working with sqlite asynchronously"
-repository = "https://github.com/ryanfowler/async-sqlite"
-documentation = "https://docs.rs/async-sqlite"
-keywords = ["sqlite", "sqlite3", "rusqlite", "async", "tokio"]
-categories = ["database"]
+description = "Fork of async-sqlite"
+repository = "https://github.com/obeli-sk/deps-async-sqlite"
 
 [features]
 default = ["bundled"]
