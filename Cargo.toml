@@ -1,5 +1,5 @@
 [package]
-name = "async-sqlite"
+name = "obeli-sk-deps-async-sqlite"
 version = "0.2.2"
 authors = ["Ryan Fowler"]
 edition = "2021"
