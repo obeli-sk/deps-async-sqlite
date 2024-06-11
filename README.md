@@ -24,7 +24,7 @@ concurrently from any thread in your program.
 To create a sqlite client and run a query:
 
 ```rust
-use async_sqlite::{ClientBuilder, JournalMode};
+use obeli_sk_deps_async_sqlite::{ClientBuilder, JournalMode};
 
 let client = ClientBuilder::new()
                 .path("/path/to/db.sqlite3")
@@ -45,7 +45,7 @@ called concurrently from any thread in your program.
 To create a sqlite pool and run a query:
 
 ```rust
-use async_sqlite::{JournalMode, PoolBuilder};
+use obeli_sk_deps_async_sqlite::{JournalMode, PoolBuilder};
 
 let pool = PoolBuilder::new()
               .path("/path/to/db.sqlite3")

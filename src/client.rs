@@ -18,8 +18,8 @@ use rusqlite::{Connection, OpenFlags};
 /// # Examples
 ///
 /// ```rust
-/// # use async_sqlite::ClientBuilder;
-/// # async fn run() -> Result<(), async_sqlite::Error> {
+/// # use obeli_sk_deps_async_sqlite::ClientBuilder;
+/// # async fn run() -> Result<(), obeli_sk_deps_async_sqlite::Error> {
 /// let client = ClientBuilder::new().path("path/to/db.sqlite3").open().await?;
 ///
 /// // ...
@@ -77,8 +77,8 @@ impl ClientBuilder {
     /// # Examples
     ///
     /// ```rust
-    /// # use async_sqlite::ClientBuilder;
-    /// # async fn run() -> Result<(), async_sqlite::Error> {
+    /// # use obeli_sk_deps_async_sqlite::ClientBuilder;
+    /// # async fn run() -> Result<(), obeli_sk_deps_async_sqlite::Error> {
     /// let client = ClientBuilder::new().open().await?;
     /// # Ok(())
     /// # }
@@ -93,8 +93,8 @@ impl ClientBuilder {
     /// # Examples
     ///
     /// ```rust
-    /// # use async_sqlite::ClientBuilder;
-    /// # fn run() -> Result<(), async_sqlite::Error> {
+    /// # use obeli_sk_deps_async_sqlite::ClientBuilder;
+    /// # fn run() -> Result<(), obeli_sk_deps_async_sqlite::Error> {
     /// let client = ClientBuilder::new().open_blocking()?;
     /// # Ok(())
     /// # }

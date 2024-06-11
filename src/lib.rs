@@ -14,9 +14,9 @@
 //! To create a sqlite client and run a query:
 //!
 //! ```rust
-//! use async_sqlite::{ClientBuilder, JournalMode};
+//! use obeli_sk_deps_async_sqlite::{ClientBuilder, JournalMode};
 //!
-//! # async fn run() -> Result<(), async_sqlite::Error> {
+//! # async fn run() -> Result<(), obeli_sk_deps_async_sqlite::Error> {
 //! let client = ClientBuilder::new()
 //!                 .path("/path/to/db.sqlite3")
 //!                 .journal_mode(JournalMode::Wal)
@@ -38,9 +38,9 @@
 //! To create a sqlite pool and run a query:
 //!
 //! ```rust
-//! use async_sqlite::{JournalMode, PoolBuilder};
+//! use obeli_sk_deps_async_sqlite::{JournalMode, PoolBuilder};
 //!
-//! # async fn run() -> Result<(), async_sqlite::Error> {
+//! # async fn run() -> Result<(), obeli_sk_deps_async_sqlite::Error> {
 //! let pool = PoolBuilder::new()
 //!               .path("/path/to/db.sqlite3")
 //!               .journal_mode(JournalMode::Wal)

@@ -1,4 +1,4 @@
-use async_sqlite::{ClientBuilder, Error, JournalMode, PoolBuilder};
+use obeli_sk_deps_async_sqlite::{ClientBuilder, Error, JournalMode, PoolBuilder};
 
 #[test]
 fn test_blocking_client() {

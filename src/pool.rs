@@ -21,8 +21,8 @@ use rusqlite::{Connection, OpenFlags};
 /// # Examples
 ///
 /// ```rust
-/// # use async_sqlite::PoolBuilder;
-/// # async fn run() -> Result<(), async_sqlite::Error> {
+/// # use obeli_sk_deps_async_sqlite::PoolBuilder;
+/// # async fn run() -> Result<(), obeli_sk_deps_async_sqlite::Error> {
 /// let pool = PoolBuilder::new().path("path/to/db.sqlite3").open().await?;
 ///
 /// // ...
@@ -89,8 +89,8 @@ impl PoolBuilder {
     /// # Examples
     ///
     /// ```rust
-    /// # use async_sqlite::PoolBuilder;
-    /// # async fn run() -> Result<(), async_sqlite::Error> {
+    /// # use obeli_sk_deps_async_sqlite::PoolBuilder;
+    /// # async fn run() -> Result<(), obeli_sk_deps_async_sqlite::Error> {
     /// let pool = PoolBuilder::new().open().await?;
     /// # Ok(())
     /// # }
@@ -124,8 +124,8 @@ impl PoolBuilder {
     /// # Examples
     ///
     /// ```rust
-    /// # use async_sqlite::PoolBuilder;
-    /// # fn run() -> Result<(), async_sqlite::Error> {
+    /// # use obeli_sk_deps_async_sqlite::PoolBuilder;
+    /// # fn run() -> Result<(), obeli_sk_deps_async_sqlite::Error> {
     /// let pool = PoolBuilder::new().open_blocking()?;
     /// # Ok(())
     /// # }
